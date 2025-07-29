@@ -2,7 +2,7 @@
   "name": "salvageorganizer",
   "version": "1.0.0",
   "description": "A web application for organizing and tracking Copart auction lots",
-  "main": "server.js",
+  "main": "server-fixed.js",
   "scripts": {
     "start": "node server-fixed.js",
     "dev": "nodemon server.js",
