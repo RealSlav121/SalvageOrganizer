@@ -28,18 +28,28 @@ async function refreshAllLots() {
     // Create an array of fetch promises for all lots
     const refreshPromises = lots.map(async (lot, index) => {
       try {
+        console.log(`Fetching data for lot ${lot.lotNumber} from ${API_BASE_URL}/lot/${lot.lotNumber}`);
         const response = await fetch(`${API_BASE_URL}/lot/${lot.lotNumber}`);
-        if (!response.ok) throw new Error(`Failed to fetch lot ${lot.lotNumber}`);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Failed to fetch lot ${lot.lotNumber}:`, response.status, errorText);
+          throw new Error(`Failed to fetch lot ${lot.lotNumber}: ${response.status} ${errorText}`);
+        }
         
-        const updatedLot = await response.json();
+        const data = await response.json();
+        console.log(`Received data for lot ${lot.lotNumber}:`, data);
         
         // Preserve the favorite status and any other important data
-        updatedLot.isFavorite = lot.isFavorite || false;
+        const updatedLot = {
+          ...data,
+          isFavorite: lot.isFavorite || false
+        };
         
         // Update the lot in the array
         return { index, lot: updatedLot };
       } catch (error) {
-        console.error(`Error refreshing lot ${lot.lotNumber}:`, error);
+        console.error(`Error fetching lot ${lot.lotNumber}:`, error);
+        showToast(`Error fetching lot ${lot.lotNumber}: ${error.message}`, 'error');
         return { index, lot };
       }
     });

@@ -151,14 +151,14 @@ const handleApiRequest = async (req, res) => {
         };
         
         console.log(`Sending response for lot ${lotNumber}`);
-        res.writeHead(200, { 
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        });
+        console.log('Response data:', JSON.stringify(mockLotData, null, 2));
+        
+        // Set CORS headers
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(mockLotData));
-        return;
+        
+        console.log('Response sent with status:', res.statusCode);
       } catch (error) {
         console.error('Error handling API request:', error);
         res.writeHead(500, { 'Content-Type': 'application/json' });
