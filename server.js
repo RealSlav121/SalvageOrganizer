@@ -96,30 +96,46 @@ const handleApiRequest = async (req, res) => {
       try {
         console.log(`Fetching data for lot ${lotNumber}`);
         
-        // Make request to Copart public API
+        // Make request to Copart public API with proper redirect handling
         const apiUrl = `https://www.copart.com/public/data/lotdetails/solr/${lotNumber}`;
-        const response = await fetch(apiUrl, {
+        console.log(`Making request to: ${apiUrl}`);
+        
+        // Use axios for better redirect handling
+        const axios = require('axios');
+        const response = await axios.get(apiUrl, {
+          maxRedirects: 5, // Limit number of redirects
+          timeout: 10000,  // 10 second timeout
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
             'Accept': 'application/json',
             'Accept-Language': 'en-US,en;q=0.9',
-            'Referer': 'https://www.copart.com/'
+            'Referer': 'https://www.copart.com/',
+            'Origin': 'https://www.copart.com',
+            'DNT': '1',
+            'Connection': 'keep-alive',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin'
+          },
+          // Handle redirects manually if needed
+          maxBodyLength: Infinity,
+          maxContentLength: Infinity,
+          validateStatus: function (status) {
+            return status >= 200 && status < 400; // Resolve only if status code is in the 200-399 range
           }
         });
         
-        if (!response.ok) {
-          throw new Error(`Failed to fetch lot data: ${response.status} ${response.statusText}`);
-        }
-        
-        const data = await response.json();
+        // Extract data from axios response
+        const responseData = response.data;
         
         // Check if we have valid data
-        if (!data || !data.data || !data.data.lotDetails) {
+        if (!responseData || !responseData.data || !responseData.data.lotDetails) {
+          console.error('Invalid response structure from Copart API:', JSON.stringify(responseData, null, 2));
           throw new Error('Invalid response from Copart API: missing required data');
         }
         
         // Extract relevant data from Copart response
-        const lotData = data.data.lotDetails;
+        const lotData = responseData.data.lotDetails;
         
         // Ensure we have the required nested structure
         if (!lotData.ld) {
