@@ -464,7 +464,7 @@ router.get('/lot/:lotNumber', async (req, res) => {
 });
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+router.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
   res.status(500).json({ 
     error: 'Internal server error',
@@ -472,10 +472,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`API endpoint: http://localhost:${PORT}/api/lot/:lotNumber`);
-});
-
-module.exports = app;
+module.exports = router;
