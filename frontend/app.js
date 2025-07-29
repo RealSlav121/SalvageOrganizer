@@ -323,7 +323,7 @@ function createLotCard(lot) {
   
   // Format sale date safely
   let saleDateStr = 'No date available';
-  if (saleDateObj) {
+  if (saleDateObj && !isNaN(saleDateObj.getTime())) {
     try {
       saleDateStr = `Sale: ${saleDateObj.toLocaleDateString()} at ${saleDateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
     } catch (e) {
@@ -341,17 +341,35 @@ function createLotCard(lot) {
     }
   }
   
-  // Determine status
+  // Determine status based on saleStatus or date
   let statusText, statusClass;
-  if (isSold) {
-    statusText = 'Sold';
-    statusClass = 'status-sold';
-  } else if (isUpcoming) {
-    statusText = lot.saleStatus === 'LIVE' ? 'Live Now' : 'Upcoming';
-    statusClass = lot.saleStatus === 'LIVE' ? 'status-live' : 'status-upcoming';
-  } else {
-    statusText = 'Future';
-    statusClass = 'status-upcoming';
+  const status = lot.saleStatus || (isSold ? 'SOLD' : isUpcoming ? 'UPCOMING' : 'FUTURE');
+  
+  switch(status) {
+    case 'NOW_PLAYING':
+      statusText = 'Now Playing';
+      statusClass = 'status-live';
+      break;
+    case 'SOON_PLAYING':
+      statusText = 'Soon Playing';
+      statusClass = 'status-upcoming';
+      break;
+    case 'SOLD':
+      statusText = 'Sold';
+      statusClass = 'status-sold';
+      break;
+    case 'LIVE':
+      statusText = 'Live Now';
+      statusClass = 'status-live';
+      break;
+    case 'UPCOMING':
+      statusText = 'Upcoming';
+      statusClass = 'status-upcoming';
+      break;
+    case 'FUTURE':
+    default:
+      statusText = 'Future Lot';
+      statusClass = 'status-upcoming';
   }
   
   // Create card
@@ -376,19 +394,19 @@ function createLotCard(lot) {
       <div class="lot-stats">
         <div class="stat-item">
           <span class="stat-label">Damage</span>
-          <span class="stat-value">${lot.primaryDamage || 'N/A'}</span>
+          <span class="stat-value">${lot.damage || lot.primaryDamage || 'N/A'}</span>
         </div>
         <div class="stat-item">
           <span class="stat-label">Location</span>
-          <span class="stat-value">${lot.location || 'N/A'}</span>
+          <span class="stat-value">${lot.saleLocation || lot.location || 'N/A'}</span>
         </div>
         <div class="stat-item">
           <span class="stat-label">Sale Date</span>
-          <span class="stat-value">${saleDate ? saleDate.toLocaleDateString() : 'N/A'}</span>
+          <span class="stat-value">${saleDateObj ? saleDateObj.toLocaleDateString() : 'N/A'}</span>
         </div>
         <div class="stat-item">
           <span class="stat-label">Current Bid</span>
-          <span class="stat-value">${lot.currentBid ? `$${lot.currentBid.toLocaleString()}` : 'N/A'}</span>
+          <span class="stat-value">${lot.currentBid !== undefined ? `$${Number(lot.currentBid).toLocaleString()}` : 'N/A'}</span>
         </div>
       </div>
       
