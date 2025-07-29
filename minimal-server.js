@@ -1,6 +1,12 @@
 const express = require('express');
 const path = require('path');
 
+// Remove problematic environment variables
+if (process.env.DEBUG_URL) {
+  console.log('Removing DEBUG_URL environment variable to prevent path-to-regexp error');
+  delete process.env.DEBUG_URL;
+}
+
 // Create a new Express app
 const app = express();
 const PORT = process.env.PORT || 3000;
