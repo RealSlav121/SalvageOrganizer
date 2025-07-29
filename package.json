@@ -2,10 +2,10 @@
   "name": "salvageorganizer",
   "version": "1.0.0",
   "description": "A web application for organizing and tracking Copart auction lots",
-  "main": "minimal-http-server.js",
+  "main": "start.js",
   "scripts": {
-    "start": "node minimal-http-server.js",
-    "dev": "nodemon minimal-http-server.js",
+    "start": "node start.js",
+    "dev": "nodemon start.js",
     "build": "cd frontend && npm install",
     "heroku-postbuild": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
