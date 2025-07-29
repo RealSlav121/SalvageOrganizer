@@ -82,68 +82,101 @@ function serveIndexHtml(res) {
 
 // API Routes
 const handleApiRequest = async (req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const pathSegments = url.pathname.split('/').filter(Boolean);
+  console.log('Handling API request:', req.url);
   
-  // Handle /api/lot/:lotNumber
-  if (pathSegments[0] === 'api' && pathSegments[1] === 'lot' && pathSegments[2]) {
-    const lotNumber = pathSegments[2];
+  try {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const pathSegments = url.pathname.split('/').filter(Boolean);
+    console.log('Path segments:', pathSegments);
     
-    try {
-      // In a real implementation, you would fetch the lot data from your database or Copart API
-      // For now, we'll return mock data with the structure expected by the frontend
-      const mockLotData = {
-        lotNumber,
-        title: `2020 Tesla Model 3 #${lotNumber}`,
-        make: 'Tesla',
-        model: 'Model 3',
-        year: '2020',
-        damage: 'Front End',
-        odometer: '12,345',
-        imageUrl: 'https://via.placeholder.com/300x200',
-        saleDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
-        saleLocation: 'ONLINE',
-        currentBid: 25000,
-        buyNowPrice: 30000,
-        isFavorite: false,
-        lastUpdated: new Date().toISOString(),
-        // Additional fields that might be used by the frontend
-        vin: `5YJ3E1EA${lotNumber.slice(-9)}`,
-        color: 'Red',
-        engine: 'Electric',
-        drive: 'AWD',
-        transmission: 'Automatic',
-        fuelType: 'Electric',
-        bodyStyle: 'Sedan',
-        vehicleType: 'Passenger Vehicle',
-        primaryDamage: 'Front End',
-        secondaryDamage: 'None',
-        startCode: 'A',
-        highlights: 'Clean Title, Runs and Drives',
-        specialNotes: 'Airbags Deployed, Starts'
-      };
+    // Handle /api/lot/:lotNumber
+    if (pathSegments[0] === 'api' && pathSegments[1] === 'lot' && pathSegments[2]) {
+      const lotNumber = pathSegments[2];
       
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(mockLotData));
-      return;
-    } catch (error) {
-      console.error('Error handling API request:', error);
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Internal server error' }));
-      return;
+      try {
+        console.log(`Fetching data for lot ${lotNumber}`);
+        // In a real implementation, you would fetch the lot data from your database or Copart API
+        // For now, we'll return mock data with the structure expected by the frontend
+        const mockLotData = {
+          lotNumber,
+          title: `2020 Tesla Model 3 #${lotNumber}`,
+          make: 'Tesla',
+          model: 'Model 3',
+          year: '2020',
+          damage: 'Front End',
+          odometer: '12,345',
+          imageUrl: 'https://via.placeholder.com/300x200',
+          saleDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
+          saleLocation: 'ONLINE',
+          currentBid: 25000,
+          buyNowPrice: 30000,
+          isFavorite: false,
+          lastUpdated: new Date().toISOString(),
+          // Additional fields that might be used by the frontend
+          vin: `5YJ3E1EA${lotNumber.slice(-9)}`,
+          color: 'Red',
+          engine: 'Electric',
+          drive: 'AWD',
+          transmission: 'Automatic',
+          fuelType: 'Electric',
+          bodyStyle: 'Sedan',
+          vehicleType: 'Passenger Vehicle',
+          primaryDamage: 'Front End',
+          secondaryDamage: 'None',
+          startCode: 'A',
+          highlights: 'Clean Title, Runs and Drives',
+          specialNotes: 'Airbags Deployed, Starts'
+        };
+        
+        console.log(`Sending response for lot ${lotNumber}`);
+        res.writeHead(200, { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        });
+        res.end(JSON.stringify(mockLotData));
+        return;
+      } catch (error) {
+        console.error('Error handling API request:', error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal server error' }));
+        return;
+      }
     }
+    
+    // If no API route matched
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
+  } catch (error) {
+    console.error('Error processing request:', error);
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Error processing request' }));
   }
-  
-  // If no API route matched
-  res.writeHead(404, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ error: 'Not found' }));};
+};
 
 // Create server
 const server = http.createServer((req, res) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  const requestTime = new Date().toISOString();
+  console.log(`[${requestTime}] ${req.method} ${req.url}`);
   
-  // Handle API requests
+  // Log request headers for debugging
   if (req.url.startsWith('/api/')) {
+    console.log('API Request Headers:', JSON.stringify(req.headers, null, 2));
+    
+    // Add CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Request-Method', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    res.setHeader('Access-Control-Allow-Headers', '*');
+    
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      res.writeHead(200);
+      res.end();
+      return;
+    }
+    
     handleApiRequest(req, res);
     return;
   }
