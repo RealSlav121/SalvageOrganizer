@@ -80,11 +80,52 @@ function serveIndexHtml(res) {
   });
 }
 
+// API Routes
+const handleApiRequest = async (req, res) => {
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const pathSegments = url.pathname.split('/').filter(Boolean);
+  
+  // Handle /api/lot/:lotNumber
+  if (pathSegments[0] === 'api' && pathSegments[1] === 'lot' && pathSegments[2]) {
+    const lotNumber = pathSegments[2];
+    
+    try {
+      // In a real implementation, you would fetch the lot data from your database or Copart API
+      // For now, we'll return mock data
+      const mockLotData = {
+        lotNumber,
+        title: `Lot #${lotNumber}`,
+        description: 'Mock lot data - replace with actual implementation',
+        imageUrl: 'https://via.placeholder.com/300x200',
+        // Add other necessary fields from your frontend
+      };
+      
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(mockLotData));
+      return;
+    } catch (error) {
+      console.error('Error handling API request:', error);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Internal server error' }));
+      return;
+    }
+  }
+  
+  // If no API route matched
+  res.writeHead(404, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ error: 'Not found' }));};
+
 // Create server
 const server = http.createServer((req, res) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   
-  // Parse URL
+  // Handle API requests
+  if (req.url.startsWith('/api/')) {
+    handleApiRequest(req, res);
+    return;
+  }
+  
+  // Parse URL for static file serving
   const parsedUrl = url.parse(req.url);
   let pathname = path.join(PUBLIC_DIR, parsedUrl.pathname === '/' ? 'index.html' : parsedUrl.pathname);
   
