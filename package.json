@@ -2,10 +2,10 @@
   "name": "salvageorganizer",
   "version": "1.0.0",
   "description": "A web application for organizing and tracking Copart auction lots",
-  "main": "start.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node start.js",
-    "dev": "nodemon start.js",
+    "start": "node server.js",
+    "dev": "nodemon server.js",
     "build": "cd frontend && npm install",
     "heroku-postbuild": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -19,13 +19,6 @@
     "npm": ">=6.0.0"
   },
   "dependencies": {
-    "axios": "^1.11.0",
-    "cheerio": "^1.1.2",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.1",
-    "express": "^5.1.0",
-    "helmet": "^8.1.0",
-    "morgan": "^1.10.1",
-    "path": "^0.12.7"
+    "axios": "^1.11.0"
   }
 }
