@@ -97,6 +97,16 @@ const handleApiRequest = async (req, res) => {
         console.log(`Fetching data for lot ${lotNumber}`);
         // In a real implementation, you would fetch the lot data from your database or Copart API
         // For now, we'll return mock data with the structure expected by the frontend
+        // Generate a random sale date within the next 14 days
+        const randomDays = Math.floor(Math.random() * 14);
+        const saleDate = new Date();
+        saleDate.setDate(saleDate.getDate() + randomDays);
+        
+        // Determine sale status based on the date
+        let saleStatus = 'FUTURE';
+        if (randomDays === 0) saleStatus = 'NOW_PLAYING';
+        else if (randomDays <= 7) saleStatus = 'SOON_PLAYING';
+        
         const mockLotData = {
           lotNumber,
           title: `2020 Tesla Model 3 #${lotNumber}`,
@@ -104,15 +114,20 @@ const handleApiRequest = async (req, res) => {
           model: 'Model 3',
           year: '2020',
           damage: 'Front End',
-          odometer: '12,345',
+          odometer: {
+            value: 12345,
+            unit: 'mi',
+            formatted: '12,345 mi'
+          },
           imageUrl: 'https://via.placeholder.com/300x200',
-          saleDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
+          saleDate: saleDate.toISOString(),
+          saleStatus,
           saleLocation: 'ONLINE',
           currentBid: 25000,
           buyNowPrice: 30000,
           isFavorite: false,
           lastUpdated: new Date().toISOString(),
-          // Additional fields that might be used by the frontend
+          // Additional fields
           vin: `5YJ3E1EA${lotNumber.slice(-9)}`,
           color: 'Red',
           engine: 'Electric',
@@ -125,7 +140,14 @@ const handleApiRequest = async (req, res) => {
           secondaryDamage: 'None',
           startCode: 'A',
           highlights: 'Clean Title, Runs and Drives',
-          specialNotes: 'Airbags Deployed, Starts'
+          specialNotes: 'Airbags Deployed, Starts',
+          // Add more fields that might be used by the frontend
+          seller: 'Copart',
+          location: 'Online',
+          hasKeys: true,
+          startPrice: 10000,
+          bidCount: Math.floor(Math.random() * 50),
+          timeLeft: '2d 4h 30m'
         };
         
         console.log(`Sending response for lot ${lotNumber}`);
