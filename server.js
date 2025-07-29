@@ -3,7 +3,24 @@ const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
-require('dotenv').config();
+
+// Load environment variables safely
+const dotenv = require('dotenv');
+const result = dotenv.config();
+
+if (result.error) {
+  console.warn('Warning: .env file not found or could not be loaded. Using system environment variables.');
+}
+
+// Filter out any problematic environment variables that might be interpreted as routes
+const filteredEnv = {};
+for (const [key, value] of Object.entries(process.env)) {
+  // Skip any environment variables that look like URLs to prevent path-to-regexp errors
+  if (!key.endsWith('_URL') && !key.endsWith('_ENDPOINT')) {
+    filteredEnv[key] = value;
+  }
+}
+process.env = { ...filteredEnv };
 
 const app = express();
 const PORT = process.env.PORT || 3000;
