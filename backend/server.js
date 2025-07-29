@@ -1,10 +1,12 @@
 const express = require('express');
 const puppeteer = require('puppeteer');
 const cheerio = require('cheerio');
+const helmet = require('helmet');
+const cors = require('cors');
+const morgan = require('morgan');
 const router = express.Router();
 
-// Remove direct server initialization and middleware
-// These will be handled by the main server.js
+// Note: Server initialization and middleware are handled by the main server.js
 
 // Global browser instance and promise
 let browser;
