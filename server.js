@@ -91,13 +91,36 @@ const handleApiRequest = async (req, res) => {
     
     try {
       // In a real implementation, you would fetch the lot data from your database or Copart API
-      // For now, we'll return mock data
+      // For now, we'll return mock data with the structure expected by the frontend
       const mockLotData = {
         lotNumber,
-        title: `Lot #${lotNumber}`,
-        description: 'Mock lot data - replace with actual implementation',
+        title: `2020 Tesla Model 3 #${lotNumber}`,
+        make: 'Tesla',
+        model: 'Model 3',
+        year: '2020',
+        damage: 'Front End',
+        odometer: '12,345',
         imageUrl: 'https://via.placeholder.com/300x200',
-        // Add other necessary fields from your frontend
+        saleDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
+        saleLocation: 'ONLINE',
+        currentBid: 25000,
+        buyNowPrice: 30000,
+        isFavorite: false,
+        lastUpdated: new Date().toISOString(),
+        // Additional fields that might be used by the frontend
+        vin: `5YJ3E1EA${lotNumber.slice(-9)}`,
+        color: 'Red',
+        engine: 'Electric',
+        drive: 'AWD',
+        transmission: 'Automatic',
+        fuelType: 'Electric',
+        bodyStyle: 'Sedan',
+        vehicleType: 'Passenger Vehicle',
+        primaryDamage: 'Front End',
+        secondaryDamage: 'None',
+        startCode: 'A',
+        highlights: 'Clean Title, Runs and Drives',
+        specialNotes: 'Airbags Deployed, Starts'
       };
       
       res.writeHead(200, { 'Content-Type': 'application/json' });
