@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Organize and track Copart auction lots with ease">
+  <title>SalvageOrganizer</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="favicon.ico">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <meta name="theme-color" content="#1a1a1a">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="container">
+        <h1><i class="fas fa-car-crash"></i> SalvageOrganizer</h1>
+        <div class="search-container">
+          <input type="text" id="lotUrlInput" placeholder="Paste Copart lot URL or lot number" />
+          <button id="addLotBtn">
+            <i class="fas fa-plus"></i> Add Lot
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="soon">Soon Playing</button>
+        <button class="tab-btn" data-tab="future">Future Lots</button>
+        <button class="tab-btn" data-tab="recent">Recently Played</button>
+      </div>
+      
+      <!-- Loading Overlay -->
+      <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p>Updating lots data...</p>
+      </div>
+
+      <div class="tab-content">
+        <!-- Soon Playing -->
+        <div id="soon" class="tab-pane active">
+          <h2>Soon Playing</h2>
+          <div id="soonLots" class="lots-grid">
+            <!-- Lots will be inserted here by JavaScript -->
+            <div class="empty-state">
+              <i class="fas fa-play-circle"></i>
+              <p>No lots playing soon</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Future Lots -->
+        <div id="future" class="tab-pane">
+          <h2>Future Lots</h2>
+          <div id="futureLots" class="lots-grid">
+            <!-- Lots will be inserted here by JavaScript -->
+            <div class="empty-state">
+              <i class="fas fa-clock"></i>
+              <p>No future lots yet</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recently Played -->
+        <div id="recent" class="tab-pane">
+          <h2>Recently Played</h2>
+          <div id="recentLots" class="lots-grid">
+            <!-- Lots will be inserted here by JavaScript -->
+            <div class="empty-state">
+              <i class="fas fa-history"></i>
+              <p>No recently played lots</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Lot Details Modal -->
+    <div id="lotModal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <div id="lotDetails">
+          <!-- Lot details will be inserted here by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
