@@ -95,60 +95,98 @@ const handleApiRequest = async (req, res) => {
       
       try {
         console.log(`Fetching data for lot ${lotNumber}`);
-        // In a real implementation, you would fetch the lot data from your database or Copart API
-        // For now, we'll return mock data with the structure expected by the frontend
-        // Generate a random sale date within the next 14 days
-        const randomDays = Math.floor(Math.random() * 14);
-        const saleDate = new Date();
-        saleDate.setDate(saleDate.getDate() + randomDays);
         
-        // Determine sale status based on the date
-        let saleStatus = 'FUTURE';
-        if (randomDays === 0) saleStatus = 'NOW_PLAYING';
-        else if (randomDays <= 7) saleStatus = 'SOON_PLAYING';
+        // Make request to Copart public API
+        const apiUrl = `https://www.copart.com/public/data/lotdetails/solr/${lotNumber}`;
+        const response = await fetch(apiUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'application/json',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Referer': 'https://www.copart.com/'
+          }
+        });
         
-        const mockLotData = {
-          lotNumber,
-          title: `2020 Tesla Model 3 #${lotNumber}`,
-          make: 'Tesla',
-          model: 'Model 3',
-          year: '2020',
-          damage: 'Front End',
+        if (!response.ok) {
+          throw new Error(`Failed to fetch lot data: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        // Extract relevant data from Copart response
+        const lotData = data.data.lotDetails;
+        
+        // Format the response to match frontend expectations
+        const formattedData = {
+          lotNumber: lotData.ln,
+          title: `${lotData.ld.yr} ${lotData.ld.mk} ${lotData.ld.md} #${lotData.ln}`,
+          make: lotData.ld.mk,
+          model: lotData.ld.md,
+          year: lotData.ld.yr,
+          damage: lotData.ld.dmg,
           odometer: {
-            value: 12345,
-            unit: 'mi',
-            formatted: '12,345 mi'
+            value: lotData.ld.orr,
+            unit: lotData.ld.oru === 'M' ? 'mi' : 'km',
+            formatted: `${lotData.ld.orr.toLocaleString()} ${lotData.ld.oru === 'M' ? 'mi' : 'km'}`
           },
-          imageUrl: 'https://via.placeholder.com/300x200',
-          saleDate: saleDate.toISOString(),
-          saleStatus,
-          saleLocation: 'ONLINE',
-          currentBid: 25000,
-          buyNowPrice: 30000,
+          imageUrl: lotData.ld.thumb ? `https://cs.copart.com/v1/AUTH_svc.pdoc00001${lotData.ld.thumb}` : 'https://via.placeholder.com/300x200',
+          saleDate: lotData.ld.saleDate || new Date().toISOString(),
+          saleStatus: mapSaleStatus(lotData.ld.saleStatus || 'UPCOMING'),
+          saleLocation: lotData.ld.yn || 'ONLINE',
+          currentBid: lotData.ld.highestBid || lotData.ld.startingBid || 0,
+          buyNowPrice: lotData.ld.buyNowPrice || 0,
           isFavorite: false,
           lastUpdated: new Date().toISOString(),
-          // Additional fields
-          vin: `5YJ3E1EA${lotNumber.slice(-9)}`,
-          color: 'Red',
-          engine: 'Electric',
-          drive: 'AWD',
-          transmission: 'Automatic',
-          fuelType: 'Electric',
-          bodyStyle: 'Sedan',
-          vehicleType: 'Passenger Vehicle',
-          primaryDamage: 'Front End',
-          secondaryDamage: 'None',
-          startCode: 'A',
-          highlights: 'Clean Title, Runs and Drives',
-          specialNotes: 'Airbags Deployed, Starts',
-          // Add more fields that might be used by the frontend
+          vin: lotData.ld.fv || '',
+          color: lotData.ld.clr || '',
+          engine: lotData.ld.egn || '',
+          drive: lotData.ld.drv || '',
+          transmission: lotData.ld.tm || '',
+          fuelType: lotData.ld.fuel || '',
+          bodyStyle: lotData.ld.bstl || '',
+          vehicleType: lotData.ld.vt || '',
+          primaryDamage: lotData.ld.dmg || '',
+          secondaryDamage: lotData.ld.sdmg || '',
+          startCode: lotData.ld.stc || '',
+          highlights: lotData.ld.hl || '',
+          specialNotes: lotData.ld.sn || '',
           seller: 'Copart',
-          location: 'Online',
-          hasKeys: true,
-          startPrice: 10000,
-          bidCount: Math.floor(Math.random() * 50),
-          timeLeft: '2d 4h 30m'
+          location: lotData.ld.yn || 'Online',
+          hasKeys: lotData.ld.hk || false,
+          startPrice: lotData.ld.startingBid || 0,
+          bidCount: lotData.ld.bidCount || 0,
+          timeLeft: formatTimeLeft(lotData.ld.timeLeft)
         };
+        
+        console.log('Fetched lot data:', JSON.stringify(formattedData, null, 2));
+        
+        // Helper function to map sale status
+        function mapSaleStatus(status) {
+          const statusMap = {
+            'UPCOMING': 'FUTURE',
+            'PENDING': 'UPCOMING',
+            'LIVE': 'NOW_PLAYING',
+            'SOLD': 'SOLD',
+            'CLOSED': 'SOLD',
+            'PROCESSING': 'UPCOMING'
+          };
+          return statusMap[status] || 'FUTURE';
+        }
+        
+        // Helper function to format time left
+        function formatTimeLeft(seconds) {
+          if (!seconds) return '';
+          const days = Math.floor(seconds / 86400);
+          const hours = Math.floor((seconds % 86400) / 3600);
+          const minutes = Math.floor((seconds % 3600) / 60);
+          
+          const parts = [];
+          if (days > 0) parts.push(`${days}d`);
+          if (hours > 0) parts.push(`${hours}h`);
+          if (minutes > 0) parts.push(`${minutes}m`);
+          
+          return parts.join(' ') || '0m';
+        }
         
         console.log(`Sending response for lot ${lotNumber}`);
         console.log('Response data:', JSON.stringify(mockLotData, null, 2));
