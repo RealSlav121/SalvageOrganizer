@@ -113,8 +113,18 @@ const handleApiRequest = async (req, res) => {
         
         const data = await response.json();
         
+        // Check if we have valid data
+        if (!data || !data.data || !data.data.lotDetails) {
+          throw new Error('Invalid response from Copart API: missing required data');
+        }
+        
         // Extract relevant data from Copart response
         const lotData = data.data.lotDetails;
+        
+        // Ensure we have the required nested structure
+        if (!lotData.ld) {
+          throw new Error('Invalid lot data structure from Copart API');
+        }
         
         // Format the response to match frontend expectations
         const formattedData = {
@@ -125,9 +135,9 @@ const handleApiRequest = async (req, res) => {
           year: lotData.ld.yr,
           damage: lotData.ld.dmg,
           odometer: {
-            value: lotData.ld.orr,
-            unit: lotData.ld.oru === 'M' ? 'mi' : 'km',
-            formatted: `${lotData.ld.orr.toLocaleString()} ${lotData.ld.oru === 'M' ? 'mi' : 'km'}`
+            value: lotData.ld.orr || 0,
+            unit: (lotData.ld.oru === 'M' || !lotData.ld.oru) ? 'mi' : 'km',
+            formatted: lotData.ld.orr ? `${Number(lotData.ld.orr).toLocaleString()} ${lotData.ld.oru === 'M' ? 'mi' : 'km'}` : 'N/A'
           },
           imageUrl: lotData.ld.thumb ? `https://cs.copart.com/v1/AUTH_svc.pdoc00001${lotData.ld.thumb}` : 'https://via.placeholder.com/300x200',
           saleDate: lotData.ld.saleDate || new Date().toISOString(),
