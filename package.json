@@ -4,10 +4,11 @@
   "description": "A web application for organizing and tracking Copart auction lots",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node minimal-server.js",
     "dev": "nodemon server.js",
     "build": "cd frontend && npm install",
-    "heroku-postbuild": "npm run build"
+    "heroku-postbuild": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": ["copart", "auction", "salvage", "organizer"],
   "author": "RealSlav121",
