@@ -4,7 +4,7 @@
   "description": "A web application for organizing and tracking Copart auction lots",
   "main": "server.js",
   "scripts": {
-    "start": "node minimal-server.js",
+    "start": "node server-fixed.js",
     "dev": "nodemon server.js",
     "build": "cd frontend && npm install",
     "heroku-postbuild": "npm run build",
