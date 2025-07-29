@@ -154,22 +154,37 @@ const handleApiRequest = async (req, res) => {
         console.log('Response data:', JSON.stringify(mockLotData, null, 2));
         
         // Set CORS headers
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(mockLotData));
+        const headers = {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        };
         
-        console.log('Response sent with status:', res.statusCode);
+        // Send a single response
+        res.writeHead(200, headers);
+        res.end(JSON.stringify(mockLotData));
+        console.log('Response sent successfully');
+        return; // Important: Return after sending response
       } catch (error) {
         console.error('Error handling API request:', error);
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Internal server error' }));
+        if (!res.headersSent) {
+          res.writeHead(500, { 
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          });
+          res.end(JSON.stringify({ error: 'Internal server error' }));
+        }
         return;
-      }
+      } 
     }
     
     // If no API route matched
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Not found' }));
+    if (!res.headersSent) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Not found' }));
+    }
   } catch (error) {
     console.error('Error processing request:', error);
     res.writeHead(500, { 'Content-Type': 'application/json' });
