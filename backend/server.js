@@ -1,10 +1,10 @@
 const express = require('express');
 const puppeteer = require('puppeteer');
 const cheerio = require('cheerio');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-require('dotenv').config();
+const router = express.Router();
+
+// Remove direct server initialization and middleware
+// These will be handled by the main server.js
 
 // Global browser instance and promise
 let browser;
@@ -69,14 +69,11 @@ process.on('SIGINT', async () => {
   process.exit(0);
 });
 
-const app = express();
-const PORT = process.env.PORT || 5001;
-
 // Middleware
-app.use(helmet());
-app.use(cors());
-app.use(morgan('dev'));
-app.use(express.json());
+router.use(helmet());
+router.use(cors());
+router.use(morgan('dev'));
+router.use(express.json());
 
 // Anti-bot headers
 const getHeaders = () => ({
@@ -344,7 +341,7 @@ const getSaleStatusDescription = (statusCode, saleDate) => {
 };
 
 // API endpoint to fetch lot data
-app.get('/lot/:lotNumber', async (req, res) => {
+router.get('/lot/:lotNumber', async (req, res) => {
   let page = null;
   // ... (rest of the code remains the same)
   try {
