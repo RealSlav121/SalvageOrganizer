@@ -1,10 +1,11 @@
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
+const url = require('url');
 
 // Remove all environment variables that might cause path-to-regexp issues
 Object.keys(process.env).forEach(key => {
-  if (key.endsWith('_URL') || key.endsWith('_ENDPOINT')) {
+  if (key.endsWith('_URL') || key.endsWith('_ENDPOINT') || key === 'DEBUG_URL') {
     console.log(`Removing environment variable: ${key}`);
     delete process.env[key];
   }
@@ -31,19 +32,25 @@ const MIME_TYPES = {
   '.wasm': 'application/wasm'
 };
 
+// Import the backend router
+const backendRouter = require('./backend/router');
+
 const server = http.createServer(async (req, res) => {
   console.log(`Request: ${req.method} ${req.url}`);
   
+  // Parse URL
+  const parsedUrl = url.parse(req.url, true);
+  
   // Handle API routes
-  if (req.url.startsWith('/api/')) {
-    if (req.method === 'GET' && req.url.startsWith('/api/test')) {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ message: 'API is working!' }));
-      return;
+  if (parsedUrl.pathname.startsWith('/api/')) {
+    // Delegate to backend router
+    try {
+      await backendRouter.handleApiRequest(req, res);
+    } catch (error) {
+      console.error('API Error:', error);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Internal Server Error' }));
     }
-    
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Not Found' }));
     return;
   }
   
