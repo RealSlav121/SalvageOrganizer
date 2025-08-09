@@ -70,11 +70,32 @@ process.on('SIGINT', async () => {
 });
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5002;
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+// Configure CORS to allow requests from any device on the local network
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Allow localhost and any IP in the 192.168.1.x range
+    const isLocalhost = origin.includes('localhost:3000');
+    const isLocalNetwork = origin.includes('192.168.1.') && origin.endsWith(':3000');
+    
+    if (isLocalhost || isLocalNetwork) {
+      return callback(null, true);
+    }
+    
+    // For other origins, you might want to be more restrictive
+    const msg = 'The CORS policy for this site only allows access from localhost or local network devices.';
+    return callback(new Error(msg), false);
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 app.use(morgan('dev'));
 app.use(express.json());
 
@@ -474,9 +495,10 @@ app.use((err, req, res, next) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`API endpoint: http://localhost:${PORT}/api/lot/:lotNumber`);
+// Listen on all network interfaces (0.0.0.0) to allow access from other devices on the network
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Access the backend at http://192.168.1.118:${PORT}`);
 });
 
 module.exports = app;

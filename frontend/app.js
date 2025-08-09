@@ -4,7 +4,8 @@ let lotUrlInput, addLotBtn, tabBtns, tabPanes, modal, closeBtn, lotDetailsContai
 
 // State
 let lots = JSON.parse(localStorage.getItem('salvageLots')) || [];
-const API_BASE_URL = 'http://localhost:5001';
+// Use the Mac's IP address to allow access from other devices on the network
+const API_BASE_URL = 'http://192.168.1.118:5002';
 
 // Show loading overlay
 function showLoading(show) {
@@ -265,20 +266,36 @@ function renderLots() {
       return;
     }
     
-    // 3. If there's any sale date in the future, it's a "Future Lot"
+    // 3. If there's any sale date in the future, check if it's within the next 7 days for "Soon Playing"
     if (saleDate && saleDate > now) {
-      lot.saleStatus = 'FUTURE';
-      const statusElement = lotElement.querySelector('.lot-status');
-      if (statusElement) {
-        statusElement.textContent = 'Future Lot';
-        statusElement.className = 'lot-status status-upcoming';
+      // Calculate if the sale is within the next 7 days
+      const oneWeekFromNow = new Date();
+      oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
+      
+      if (saleDate <= oneWeekFromNow) {
+        // If within 7 days, mark as "Soon Playing"
+        lot.saleStatus = 'SOON_PLAYING';
+        const statusElement = lotElement.querySelector('.lot-status');
+        if (statusElement) {
+          statusElement.textContent = 'Soon Playing';
+          statusElement.className = 'lot-status status-upcoming';
+        }
+        soonLotsContainer.appendChild(lotElement);
+      } else {
+        // If more than 7 days away, mark as "Future"
+        lot.saleStatus = 'FUTURE';
+        const statusElement = lotElement.querySelector('.lot-status');
+        if (statusElement) {
+          statusElement.textContent = 'Future Lot';
+          statusElement.className = 'lot-status status-upcoming';
+        }
+        futureLotsContainer.appendChild(lotElement);
       }
-      futureLotsContainer.appendChild(lotElement);
       return;
     }
     
     // 4. If we have an explicit status from the backend
-    if (lot.saleStatus === 'NOW_PLAYING') {
+    if (lot.saleStatus === 'NOW_PLAYING' || lot.saleStatus === 'SOON_PLAYING') {
       soonLotsContainer.appendChild(lotElement);
       return;
     }
@@ -333,7 +350,9 @@ function createLotCard(lot) {
     statusText = lot.saleStatus === 'LIVE' ? 'Live Now' : 'Upcoming';
     statusClass = lot.saleStatus === 'LIVE' ? 'status-live' : 'status-upcoming';
   } else {
-    statusText = 'Future';
+    // Check if this is a true future lot (with a future sale date) or just a regular lot
+    const hasFutureDate = lot.saleDate && new Date(lot.saleDate) > new Date();
+    statusText = hasFutureDate ? 'Future Lot' : 'Upcoming Lot';
     statusClass = 'status-upcoming';
   }
   
