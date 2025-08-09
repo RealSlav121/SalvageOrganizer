@@ -4,8 +4,8 @@ let lotUrlInput, addLotBtn, tabBtns, tabPanes, modal, closeBtn, lotDetailsContai
 
 // State
 let lots = JSON.parse(localStorage.getItem('salvageLots')) || [];
-// Use the Mac's IP address to allow access from other devices on the network
-const API_BASE_URL = 'http://192.168.1.118:5002';
+// Use relative URL for API requests
+const API_BASE_URL = ''; // Requests will be made to the same origin
 
 // Show loading overlay
 function showLoading(show) {
